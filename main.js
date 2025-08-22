@@ -1,5 +1,7 @@
 fetch('https://profilepage-7jmr.onrender.com/https://guns.lol/saintremy', {
-  headers: { 
+  method: 'GET',
+  mode: 'cors',
+  headers: {
     'X-Requested-With': 'XMLHttpRequest',
     'Origin': window.location.origin
   }
