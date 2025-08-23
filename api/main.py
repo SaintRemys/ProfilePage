@@ -18,13 +18,23 @@ def activity_to_dict(acts):
     if not acts:
         return None
     for a in acts:
-        if a.type.name.lower() != "custom":
+        if a.name.lower() == "spotify":
+            return {
+                "type": "listening",
+                "name": a.name,
+                "details": getattr(a, "details", None),  # Song
+                "state": getattr(a, "state", None),      # Artist
+                "album": getattr(a, "album", None),
+                "image_url": getattr(a, "assets", {}).get("large_image", None)
+            }
+        elif a.type.name.lower() != "custom":
             return {
                 "type": a.type.name.lower(),
                 "name": a.name,
                 "details": getattr(a, "details", None),
                 "state": getattr(a, "state", None)
             }
+    # fallback if only custom activities exist
     a = acts[0]
     return {
         "type": a.type.name.lower(),
