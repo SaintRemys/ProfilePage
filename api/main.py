@@ -11,7 +11,7 @@ intents.presences = True
 
 client = discord.Client(intents=intents)
 app = Flask(__name__)
-CORS(app)  # Allow all origins
+CORS(app)
 user_cache = {}
 
 def activities_to_dict(acts):
@@ -32,7 +32,9 @@ def activities_to_dict(acts):
                     f"https://i.scdn.co/image/{a.assets.large_image[8:]}"
                     if getattr(a, "assets", None) and getattr(a.assets, "large_image", None)
                     else None
-                )
+                ),
+                "start": getattr(a, "start", None).isoformat() if getattr(a, "start", None) else None,
+                "end": getattr(a, "end", None).isoformat() if getattr(a, "end", None) else None
             }
         elif a.type.name.lower() != "custom":
             image_url = None
@@ -51,7 +53,6 @@ def activities_to_dict(acts):
             }
     return result
 
-
 @client.event
 async def on_ready():
     for g in client.guilds:
@@ -62,14 +63,14 @@ async def on_ready():
         for m in g.members:
             user_cache[m.id] = {
                 "status": str(m.status),
-                "activity": activity_to_dict(m.activities)
+                **activities_to_dict(m.activities)
             }
 
 @client.event
 async def on_presence_update(before, after):
     user_cache[after.id] = {
         "status": str(after.status),
-        "activity": activity_to_dict(after.activities)
+        **activities_to_dict(after.activities)
     }
 
 @app.route("/")
@@ -89,4 +90,3 @@ def run_http():
 
 threading.Thread(target=run_http, daemon=True).start()
 client.run(os.environ["BOT_TOKEN"])
-
