@@ -1,26 +1,31 @@
-fetch('https://your-render-url.onrender.com/profile')
-  .then(res => res.json())
-  .then(data => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data.html, 'text/html');
+async function updateStatus() {
+    const statusEl = document.querySelector('.status-text');
+    const trackEl = document.querySelector('.track-text');
 
-    // Username
-    const usernameEl = doc.querySelector('.m0w25B_1b6e8123b898c40378c5 span');
-    const username = usernameEl ? usernameEl.textContent.trim() : '';
+    try {
+        const res = await fetch('https://profilepage-t864.onrender.com/status/1237212866445316179');
+        const data = await res.json();
 
-    // Status image
-    const statusImg = doc.querySelector('img.xOYpNl_123666a39835a15d8188');
-    let status = 'offline';
-    if (statusImg) {
-      switch(statusImg.src) {
-        case 'https://assets.guns.lol/idle.png': status = 'idle'; break;
-        case 'https://assets.guns.lol/online.png': status = 'online'; break;
-        case 'https://assets.guns.lol/dnd.png': status = 'dnd'; break;
-        case 'https://assets.guns.lol/offline.png': status = 'offline'; break;
-        default: status = 'unknown';
-      }
+        // Update Discord status
+        statusEl.textContent = data.status || 'unknown';
+
+        // Update Spotify track info if available
+        if (data.activity && data.activity.name === 'Spotify') {
+            const details = data.activity.details || '';
+            const artists = (data.activity.state || '').replace(/;/g, ', ');
+            trackEl.textContent = `${details} by ${artists}`;
+        } else {
+            trackEl.textContent = 'Nothing';
+        }
+    } catch (err) {
+        console.error('Failed to fetch status:', err);
+        statusEl.textContent = 'Error';
+        trackEl.textContent = 'Error';
     }
+}
 
-    console.log({ username, status });
-  })
-  .catch(err => console.error(err));
+// Initial fetch
+updateStatus();
+
+// Update every 15 seconds
+setInterval(updateStatus, 15000);

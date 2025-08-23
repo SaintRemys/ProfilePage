@@ -1,6 +1,7 @@
 import os
 import threading
 from flask import Flask, jsonify
+from flask_cors import CORS
 import discord
 
 intents = discord.Intents.none()
@@ -10,6 +11,7 @@ intents.presences = True
 
 client = discord.Client(intents=intents)
 app = Flask(__name__)
+CORS(app)  # Allow all origins
 user_cache = {}
 
 def activity_to_dict(acts):
@@ -25,7 +27,8 @@ def activity_to_dict(acts):
                 "name": a.name,
                 "details": getattr(a, "title", None),
                 "state": artists,
-                "image_url": f"https://i.scdn.co/image/{a.assets.large_image[8:]}" if getattr(a, "assets", None) and getattr(a.assets, "large_image", None) else None
+                "image_url": f"https://i.scdn.co/image/{a.assets.large_image[8:]}" 
+                              if getattr(a, "assets", None) and getattr(a.assets, "large_image", None) else None
             }
         elif a.type.name.lower() != "custom":
             return {
