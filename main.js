@@ -7,8 +7,8 @@ async function updateStatus() {
 
         statusContainer.innerHTML = '';
 
-        const statusImg = document.createElement('img');
-        statusImg.className = 'status-img';
+        const statusImg = document.querySelector('.status-img');
+
         const status = data.status || 'offline';
         switch (status.toLowerCase()) {
             case 'online': statusImg.src = 'https://assets.guns.lol/online.png'; break;
