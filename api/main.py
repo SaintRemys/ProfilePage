@@ -14,36 +14,43 @@ app = Flask(__name__)
 CORS(app)  # Allow all origins
 user_cache = {}
 
-def activity_to_dict(acts):
+def activities_to_dict(acts):
     if not acts:
-        return None
-    for a in acts:
+        return {}
+    result = {}
+    for i, a in enumerate(acts, start=1):
         if a.name.lower() == "spotify":
             artists = getattr(a, "artist", "")
             if isinstance(artists, str):
                 artists = artists.replace(";", ",")
-            return {
+            result[f"activity{i}"] = {
                 "type": "listening",
                 "name": a.name,
                 "details": getattr(a, "title", None),
                 "state": artists,
-                "image_url": f"https://i.scdn.co/image/{a.assets.large_image[8:]}" 
-                              if getattr(a, "assets", None) and getattr(a.assets, "large_image", None) else None
+                "image_url": (
+                    f"https://i.scdn.co/image/{a.assets.large_image[8:]}"
+                    if getattr(a, "assets", None) and getattr(a.assets, "large_image", None)
+                    else None
+                )
             }
         elif a.type.name.lower() != "custom":
-            return {
+            image_url = None
+            if getattr(a, "assets", None):
+                if getattr(a.assets, "large_image", None):
+                    image_url = f"https://cdn.discordapp.com/app-assets/{a.application_id}/{a.assets.large_image}.png"
+                elif getattr(a.assets, "small_image", None):
+                    image_url = f"https://cdn.discordapp.com/app-assets/{a.application_id}/{a.assets.small_image}.png"
+
+            result[f"activity{i}"] = {
                 "type": a.type.name.lower(),
                 "name": a.name,
                 "details": getattr(a, "details", None),
-                "state": getattr(a, "state", None)
+                "state": getattr(a, "state", None),
+                "image_url": image_url
             }
-    a = acts[0]
-    return {
-        "type": a.type.name.lower(),
-        "name": a.name,
-        "details": getattr(a, "details", None),
-        "state": getattr(a, "state", None)
-    }
+    return result
+
 
 @client.event
 async def on_ready():
@@ -82,3 +89,4 @@ def run_http():
 
 threading.Thread(target=run_http, daemon=True).start()
 client.run(os.environ["BOT_TOKEN"])
+
