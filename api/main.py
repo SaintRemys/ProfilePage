@@ -20,30 +20,29 @@ def activities_to_dict(acts):
     result = {}
     for i, a in enumerate(acts, start=1):
         image_url = None
-        if getattr(a, "assets", None):
-            large_image = getattr(a.assets, "large_image", None)
-            if large_image:
-                if a.name.lower() == "spotify" and large_image.startswith("spotify:"):
-                    image_url = f"https://i.scdn.co/image/{large_image.split(':')[1]}"
-                else:
-                    app_id = getattr(a, "application_id", None)
-                    if app_id:
-                        image_url = f"https://cdn.discordapp.com/app-assets/{app_id}/{large_image}.png"
-            elif getattr(a.assets, "small_image", None):
-                app_id = getattr(a, "application_id", None)
-                if app_id:
-                    image_url = f"https://cdn.discordapp.com/app-assets/{app_id}/{a.assets.small_image}.png"
-
-        # Normalize artist/players info
-        state = getattr(a, "state", None)
-        details = getattr(a, "details", None)
         if a.name.lower() == "spotify":
+            image_url = getattr(a, "album_cover_url", None)
+            if not image_url and getattr(a, "assets", None):
+                large_image = getattr(a.assets, "large_image", None)
+                if large_image and large_image.startswith("spotify:"):
+                    image_url = f"https://i.scdn.co/image/{large_image.split(':')[1]}"
             artists = getattr(a, "artist", "") or ""
             if isinstance(artists, list):
                 artists = ", ".join(artists)
+            elif isinstance(artists, str):
+                artists = artists.replace(";", ",")
             state = artists
             details = getattr(a, "title", None)
-
+        else:
+            state = getattr(a, "state", None)
+            details = getattr(a, "details", None)
+            assets = getattr(a, "assets", None)
+            app_id = getattr(a, "application_id", None)
+            if assets and app_id:
+                if getattr(assets, "large_image", None):
+                    image_url = f"https://cdn.discordapp.com/app-assets/{app_id}/{assets.large_image}.png"
+                elif getattr(assets, "small_image", None):
+                    image_url = f"https://cdn.discordapp.com/app-assets/{app_id}/{assets.small_image}.png"
         if a.type.name.lower() != "custom" or a.name.lower() == "spotify":
             result[f"activity{i}"] = {
                 "type": a.type.name.lower() if a.name.lower() != "spotify" else "listening",
@@ -55,7 +54,6 @@ def activities_to_dict(acts):
                 "end": getattr(a, "end", None).isoformat() if getattr(a, "end", None) else None
             }
     return result
-
 
 @client.event
 async def on_ready():
