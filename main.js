@@ -1,3 +1,14 @@
+function formatDuration(seconds) {
+    if (!seconds) return '0s';
+    const d = Math.floor(seconds / 86400);
+    seconds %= 86400;
+    const h = Math.floor(seconds / 3600);
+    seconds %= 3600;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${d ? d + 'd ' : ''}${h ? h + 'h ' : ''}${m ? m + 'm ' : ''}${s}s`;
+}
+
 async function updateStatus() {
     const statusContainer = document.querySelector('.status.container');
     const profileWrapper = document.querySelector('.profile-wrapper')
@@ -17,7 +28,6 @@ async function updateStatus() {
             case 'dnd': statusImg.src = 'https://assets.guns.lol/dnd.png'; break;
             default: statusImg.src = 'https://assets.guns.lol/offline.png';
         }
-
 
         const activityKeys = Object.keys(data).filter(k => k.startsWith('activity'));
         if (activityKeys.length) {
@@ -69,35 +79,34 @@ async function updateStatus() {
 
                     statusContainer.appendChild(spotifyCard);
 
-                    } else if (activity.type === 'playing') {
-                        const gameCard = document.createElement('div');
+                } else if (activity.type === 'playing') {
+                    const gameCard = document.createElement('div');
 
-                        let gameIcon = '';
-                        if (activity.name.toLowerCase() === 'roblox') {
-                            gameIcon = 'https://static.wikia.nocookie.net/robloxcities/images/d/d2/RobloxLogo.png/revision/latest/scale-to-width-down/1024?cb=20230125021936';
-                        } else if (activity.name.toLowerCase() === 'valorant') {
-                            gameIcon = 'https://static.vecteezy.com/system/resources/previews/019/763/186/original/valorant-logo-transparent-free-png.png';
-                        }
+                    let gameIcon = '';
+                    if (activity.name.toLowerCase() === 'roblox') {
+                        gameIcon = 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Roblox_Logo_2025.png';
+                    } else if (activity.name.toLowerCase() === 'valorant') {
+                        gameIcon = 'https://cdn.discordapp.com/app-icons/700136079562375258/e55fc8259df1548328f977d302779ab7.png?size=160&keep_aspect_ratio=false';
+                    }
 
-                        gameCard.innerHTML = `
+                    gameCard.innerHTML = `
                         <div class="game-card sss">
                             <div class="game-header">
-                            <span>Playing Game</span>
+                                <span>Playing Game</span>
                             </div>
                             <div class="game-content">
-                            <img class="game-cover" src="${gameIcon || activity.image_url || ''}" alt="cover">
-                            <div class="game-info">
-                                <p class="game-title">${activity.name || 'Unknown Game'}</p>
-                                <div class="progress-container">
-                                <span class="playtime">${activity.details || 'In Game'}</span>
+                                <img class="game-cover" src="${gameIcon || activity.image_url || ''}" alt="cover">
+                                <div class="game-info">
+                                    <p class="game-title">${activity.name || 'Unknown Game'}</p>
+                                    <div class="progress-container">
+                                        <span class="playtime">${formatDuration(activity.duration_seconds)}</span>
+                                    </div>
                                 </div>
                             </div>
-                            </div>
                         </div>
-                        `;
+                    `;
 
-                        statusContainer.appendChild(gameCard);
-
+                    statusContainer.appendChild(gameCard);
                 }
             });
         } else {

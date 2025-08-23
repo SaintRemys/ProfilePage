@@ -46,11 +46,10 @@ def activities_to_dict(acts):
                     image_url = f"https://cdn.discordapp.com/app-assets/{app_id}/{assets.small_image}.png"
 
         start_time = getattr(a, "start", None)
-        duration_seconds = None
-        if start_time:
+        duration_seconds = getattr(a, "duration_seconds", None)
+        if start_time and not duration_seconds:
             now = datetime.now(timezone.utc)
-            duration = now - start_time
-            duration_seconds = int(duration.total_seconds())
+            duration_seconds = int((now - start_time).total_seconds())
 
         if a.type.name.lower() != "custom" or a.name.lower() == "spotify":
             result[f"activity{i}"] = {
@@ -91,7 +90,17 @@ def index():
 
 @app.route("/status/<int:user_id>")
 def get_status(user_id):
-    return jsonify(user_cache.get(user_id, {"status": "unknown"}))
+    user = user_cache.get(user_id, {"status": "unknown"})
+    if user.get("status") != "unknown":
+        now = datetime.now(timezone.utc)
+        for key in user.keys():
+            if key.startswith("activity"):
+                activity = user[key]
+                start = activity.get("start")
+                if start:
+                    start_dt = datetime.fromisoformat(start)
+                    activity["duration_seconds"] = int((now - start_dt).total_seconds())
+    return jsonify(user)
 
 @app.route("/health")
 def health():
