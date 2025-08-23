@@ -22,10 +22,10 @@ def activity_to_dict(acts):
             return {
                 "type": "listening",
                 "name": a.name,
-                "details": getattr(a, "details", None),  # Song
-                "state": getattr(a, "state", None),      # Artist
+                "details": getattr(a, "title", None),   # song title
+                "state": getattr(a, "artist", None),    # artist
                 "album": getattr(a, "album", None),
-                "image_url": getattr(a, "assets", {}).get("large_image", None)
+                "image_url": f"https://i.scdn.co/image/{a.assets.large_image[8:]}" if getattr(a, "assets", None) and getattr(a.assets, "large_image", None) else None
             }
         elif a.type.name.lower() != "custom":
             return {
@@ -34,7 +34,6 @@ def activity_to_dict(acts):
                 "details": getattr(a, "details", None),
                 "state": getattr(a, "state", None)
             }
-    # fallback if only custom activities exist
     a = acts[0]
     return {
         "type": a.type.name.lower(),
@@ -88,3 +87,4 @@ threading.Thread(target=run_http, daemon=True).start()
 
 # Run Discord bot
 client.run(os.environ["BOT_TOKEN"])
+
