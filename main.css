@@ -87,3 +87,86 @@ h2 {
 .fun p {
   margin: 8px 0;
 }
+
+.profile-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.status-img {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 30px;
+  height: 30px;
+}
+
+.embed {
+  display: flex;
+  flex-direction: column;
+  background: #2f3136;
+  border-left: 4px solid #1db954; /* green accent for Spotify */
+  border-radius: 8px;
+  padding: 12px;
+  color: #ffffff;
+  margin-top: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.embed-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.embed-header .status-img {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+.embed-body {
+  display: flex;
+  align-items: center;
+}
+
+.track-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 4px;
+  margin-right: 12px;
+  background: #000;
+}
+
+.track-info {
+  flex: 1;
+}
+
+.track-name {
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+.track-artist,
+.track-album {
+  font-size: 0.85rem;
+  color: #b9bbbe;
+  margin-bottom: 2px;
+}
+
+.track-progress {
+  width: 100%;
+  height: 4px;
+  background: #40444b;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: #1db954;
+}
+

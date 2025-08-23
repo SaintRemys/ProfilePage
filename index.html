@@ -9,7 +9,10 @@
   <div class="background"></div>
 
   <header class="hero container">
-    <img src="https://avatar-cyan.vercel.app/api/pfp/1237212866445316179/image" class="profile-pic" alt="Profile Picture">
+    <div class="profile-wrapper">
+      <img src="https://avatar-cyan.vercel.app/api/pfp/1237212866445316179/image" class="profile-pic" alt="Profile Picture">
+      <img src="" class="status-img" alt="Status">
+    </div>
     <h1>Saint Remy</h1>
     <p class="tagline">Instalock chamber main & programmer</p>
   </header>
@@ -21,9 +24,22 @@
 
   <section class="status container">
     <h2>Current Status</h2>
-    <div id="discord-status">Discord Status: <span class="status-text">Loading...</span></div>
-    <div id="spotify-track">Listening: <span class="track-text">Nothing</span></div>
+    <div class="embed">
+      <div class="embed-header">
+      </div>
+      <div class="embed-body">
+        <img src="" class="track-img" alt="Track Image">
+        <div class="track-info">
+          <div class="track-name">Nothing</div>
+          <div class="track-artist">—</div>
+          <div class="track-progress">
+            <div class="progress-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
+
 
   <section class="projects container">
     <h2>Projects & Links</h2>
