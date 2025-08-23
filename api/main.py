@@ -1,5 +1,6 @@
 import os
 import threading
+from datetime import datetime, timezone
 from flask import Flask, jsonify
 from flask_cors import CORS
 import discord
@@ -43,6 +44,14 @@ def activities_to_dict(acts):
                     image_url = f"https://cdn.discordapp.com/app-assets/{app_id}/{assets.large_image}.png"
                 elif getattr(assets, "small_image", None):
                     image_url = f"https://cdn.discordapp.com/app-assets/{app_id}/{assets.small_image}.png"
+
+        start_time = getattr(a, "start", None)
+        duration_seconds = None
+        if start_time:
+            now = datetime.now(timezone.utc)
+            duration = now - start_time
+            duration_seconds = int(duration.total_seconds())
+
         if a.type.name.lower() != "custom" or a.name.lower() == "spotify":
             result[f"activity{i}"] = {
                 "type": a.type.name.lower() if a.name.lower() != "spotify" else "listening",
@@ -50,8 +59,9 @@ def activities_to_dict(acts):
                 "details": details,
                 "state": state,
                 "image_url": image_url,
-                "start": getattr(a, "start", None).isoformat() if getattr(a, "start", None) else None,
-                "end": getattr(a, "end", None).isoformat() if getattr(a, "end", None) else None
+                "start": start_time.isoformat() if start_time else None,
+                "end": getattr(a, "end", None).isoformat() if getattr(a, "end", None) else None,
+                "duration_seconds": duration_seconds
             }
     return result
 

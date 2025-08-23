@@ -69,26 +69,35 @@ async function updateStatus() {
 
                     statusContainer.appendChild(spotifyCard);
 
-                } else if (activity.type === 'playing') {
-                    const gameCard = document.createElement('div');
-                    gameCard.innerHTML = `
-                      <div class="game-card sss">
-                        <div class="game-header">
-                          <span>Playing Game</span>
-                        </div>
-                        <div class="game-content">
-                          <img class="game-cover" src="${activity.image_url || ''}" alt="cover">
-                          <div class="game-info">
-                            <p class="game-title">${activity.name || 'Unknown Game'}</p>
-                            <div class="progress-container">
-                              <span class="playtime">${activity.details || 'In Game'}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    `;
+                    } else if (activity.type === 'playing') {
+                        const gameCard = document.createElement('div');
 
-                    statusContainer.appendChild(gameCard);
+                        let gameIcon = '';
+                        if (activity.name.toLowerCase() === 'roblox') {
+                            gameIcon = 'https://static.wikia.nocookie.net/robloxcities/images/d/d2/RobloxLogo.png/revision/latest/scale-to-width-down/1024?cb=20230125021936';
+                        } else if (activity.name.toLowerCase() === 'valorant') {
+                            gameIcon = 'https://static.vecteezy.com/system/resources/previews/019/763/186/original/valorant-logo-transparent-free-png.png';
+                        }
+
+                        gameCard.innerHTML = `
+                        <div class="game-card sss">
+                            <div class="game-header">
+                            <span>Playing Game</span>
+                            </div>
+                            <div class="game-content">
+                            <img class="game-cover" src="${gameIcon || activity.image_url || ''}" alt="cover">
+                            <div class="game-info">
+                                <p class="game-title">${activity.name || 'Unknown Game'}</p>
+                                <div class="progress-container">
+                                <span class="playtime">${activity.details || 'In Game'}</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        `;
+
+                        statusContainer.appendChild(gameCard);
+
                 }
             });
         } else {
