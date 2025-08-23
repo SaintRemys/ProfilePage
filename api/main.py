@@ -19,39 +19,43 @@ def activities_to_dict(acts):
         return {}
     result = {}
     for i, a in enumerate(acts, start=1):
+        image_url = None
+        if getattr(a, "assets", None):
+            large_image = getattr(a.assets, "large_image", None)
+            if large_image:
+                if a.name.lower() == "spotify" and large_image.startswith("spotify:"):
+                    image_url = f"https://i.scdn.co/image/{large_image.split(':')[1]}"
+                else:
+                    app_id = getattr(a, "application_id", None)
+                    if app_id:
+                        image_url = f"https://cdn.discordapp.com/app-assets/{app_id}/{large_image}.png"
+            elif getattr(a.assets, "small_image", None):
+                app_id = getattr(a, "application_id", None)
+                if app_id:
+                    image_url = f"https://cdn.discordapp.com/app-assets/{app_id}/{a.assets.small_image}.png"
+
+        # Normalize artist/players info
+        state = getattr(a, "state", None)
+        details = getattr(a, "details", None)
         if a.name.lower() == "spotify":
-            artists = getattr(a, "artist", "")
-            if isinstance(artists, str):
-                artists = artists.replace(";", ",")
+            artists = getattr(a, "artist", "") or ""
+            if isinstance(artists, list):
+                artists = ", ".join(artists)
+            state = artists
+            details = getattr(a, "title", None)
+
+        if a.type.name.lower() != "custom" or a.name.lower() == "spotify":
             result[f"activity{i}"] = {
-                "type": "listening",
+                "type": a.type.name.lower() if a.name.lower() != "spotify" else "listening",
                 "name": a.name,
-                "details": getattr(a, "title", None),
-                "state": artists,
-                "image_url": (
-                    f"https://i.scdn.co/image/{a.assets.large_image[8:]}"
-                    if getattr(a, "assets", None) and getattr(a.assets, "large_image", None)
-                    else None
-                ),
+                "details": details,
+                "state": state,
+                "image_url": image_url,
                 "start": getattr(a, "start", None).isoformat() if getattr(a, "start", None) else None,
                 "end": getattr(a, "end", None).isoformat() if getattr(a, "end", None) else None
             }
-        elif a.type.name.lower() != "custom":
-            image_url = None
-            if getattr(a, "assets", None):
-                if getattr(a.assets, "large_image", None):
-                    image_url = f"https://cdn.discordapp.com/app-assets/{a.application_id}/{a.assets.large_image}.png"
-                elif getattr(a.assets, "small_image", None):
-                    image_url = f"https://cdn.discordapp.com/app-assets/{a.application_id}/{a.assets.small_image}.png"
-
-            result[f"activity{i}"] = {
-                "type": a.type.name.lower(),
-                "name": a.name,
-                "details": getattr(a, "details", None),
-                "state": getattr(a, "state", None),
-                "image_url": image_url
-            }
     return result
+
 
 @client.event
 async def on_ready():

@@ -1,5 +1,6 @@
 async function updateStatus() {
     const statusContainer = document.querySelector('.status.container');
+    const profileWrapper = document.querySelector('.profile-wrapper')
 
     try {
         const res = await fetch('https://profilepage-t864.onrender.com/status/1237212866445316179');
@@ -7,7 +8,7 @@ async function updateStatus() {
 
         statusContainer.innerHTML = '';
 
-        const statusImg = document.querySelector('.status-img');
+        let statusImg = profileWrapper.querySelector('.status-img');
 
         const status = data.status || 'offline';
         switch (status.toLowerCase()) {
@@ -16,63 +17,79 @@ async function updateStatus() {
             case 'dnd': statusImg.src = 'https://assets.guns.lol/dnd.png'; break;
             default: statusImg.src = 'https://assets.guns.lol/offline.png';
         }
-        statusContainer.appendChild(statusImg);
 
-        // render activities
+
         const activityKeys = Object.keys(data).filter(k => k.startsWith('activity'));
         if (activityKeys.length) {
             activityKeys.forEach(key => {
                 const activity = data[key];
-                const activityDiv = document.createElement('div');
-                activityDiv.className = `activity ${activity.type}`;
 
-                if (activity.image_url) {
-                    const imgEl = document.createElement('img');
-                    imgEl.className = 'activity-img';
-                    imgEl.src = activity.image_url;
-                    activityDiv.appendChild(imgEl);
-                }
+                if (activity.type === 'listening' && activity.name === 'Spotify') {
+                    const spotifyCard = document.createElement('div');
+                    spotifyCard.innerHTML = `
+                      <div class="spotify-card sss">
+                        <div class="spotify-header">
+                          <span>Listening to Spotify</span>
+                        </div>
+                        <div class="spotify-content">
+                          <img class="spotify-cover" src="${activity.image_url || ''}" alt="cover">
+                          <div class="spotify-info">
+                            <p class="spotify-title">${activity.details || 'Unknown Track'}</p>
+                            <p class="spotify-artist">${activity.state || 'Unknown Artist'}</p>
+                            <div class="progress-container">
+                              <span class="start-time">00:00</span>
+                              <div class="progress-bar"><div class="progress-bar-fill"></div></div>
+                              <span class="end-time">00:00</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    `;
 
-                const nameEl = document.createElement('div');
-                nameEl.className = 'activity-name';
-                nameEl.textContent = activity.name || 'Unknown';
-                activityDiv.appendChild(nameEl);
+                    if (activity.start && activity.end) {
+                        const start = new Date(activity.start).getTime();
+                        const end = new Date(activity.end).getTime();
+                        const now = Date.now();
+                        const fill = spotifyCard.querySelector('.progress-bar-fill');
+                        const startSpan = spotifyCard.querySelector('.start-time');
+                        const endSpan = spotifyCard.querySelector('.end-time');
 
-                if (activity.details) {
-                    const detailsEl = document.createElement('div');
-                    detailsEl.className = 'activity-details';
-                    detailsEl.textContent = activity.details;
-                    activityDiv.appendChild(detailsEl);
-                }
+                        if (now >= start && now <= end) {
+                            const progress = ((now - start) / (end - start)) * 100;
+                            fill.style.width = `${progress}%`;
 
-                if (activity.state) {
-                    const stateEl = document.createElement('div');
-                    stateEl.className = 'activity-state';
-                    stateEl.textContent = activity.state;
-                    activityDiv.appendChild(stateEl);
-                }
+                            const elapsed = Math.floor((now - start) / 1000);
+                            const total = Math.floor((end - start) / 1000);
 
-                // spotify progress bar
-                if (activity.type === 'listening' && activity.start && activity.end) {
-                    const progressWrap = document.createElement('div');
-                    progressWrap.className = 'progress-wrap';
-
-                    const progressBar = document.createElement('div');
-                    progressBar.className = 'progress-bar';
-
-                    const start = new Date(activity.start).getTime();
-                    const end = new Date(activity.end).getTime();
-                    const now = Date.now();
-                    if (now >= start && now <= end) {
-                        const progress = ((now - start) / (end - start)) * 100;
-                        progressBar.style.width = `${progress}%`;
+                            const format = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+                            startSpan.textContent = format(elapsed);
+                            endSpan.textContent = format(total);
+                        }
                     }
 
-                    progressWrap.appendChild(progressBar);
-                    activityDiv.appendChild(progressWrap);
-                }
+                    statusContainer.appendChild(spotifyCard);
 
-                statusContainer.appendChild(activityDiv);
+                } else if (activity.type === 'playing') {
+                    const gameCard = document.createElement('div');
+                    gameCard.innerHTML = `
+                      <div class="game-card sss">
+                        <div class="game-header">
+                          <span>Playing Game</span>
+                        </div>
+                        <div class="game-content">
+                          <img class="game-cover" src="${activity.image_url || ''}" alt="cover">
+                          <div class="game-info">
+                            <p class="game-title">${activity.name || 'Unknown Game'}</p>
+                            <div class="progress-container">
+                              <span class="playtime">${activity.details || 'In Game'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    `;
+
+                    statusContainer.appendChild(gameCard);
+                }
             });
         } else {
             const noActivity = document.createElement('div');
