@@ -2,50 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Saint Remy Sanctuary</title>
+  <title>Saint Remy</title>
   <link rel="stylesheet" href="main.css">
 </head>
 <body>
-  <div class="background"></div>
-
-  <header class="hero container">
-    <div class="profile-wrapper">
-      <img src="https://avatar-cyan.vercel.app/api/pfp/1237212866445316179/image" class="profile-pic" alt="Profile Picture">
-      <img src="" class="status-img" alt="Status">
+  <div class="grain"></div>
+  
+  <nav class="nav">
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#status">Status</a>
+      <a href="#links">Links</a>
     </div>
-    <h1>Saint Remy</h1>
-    <p class="tagline">Instalock chamber main, early blue hive supporter & programmer</p>
-  </header>
+  </nav>
 
-  <section class="about container">
-    <h2>About Me</h2>
-    <p>Hi! I’m Remy. I make games, websites, and random shit in multiple coding languages</p>
-  </section>
+  <main class="main">
+    <section class="hero">
+      <div class="profile-wrapper">
+        <img src="https://avatar-cyan.vercel.app/api/pfp/1237212866445316179/image" class="profile-pic" alt="Profile">
+        <img src="" class="status-img" alt="Status">
+      </div>
+      <h1>Saint Remy</h1>
+      <p class="subtitle">Developer & Sigma</p>
+      <div class="tagline">Instalock chamber main & programmer</div>
+    </section>
 
-  <section class="status container">
-    
-  </section>
+    <section id="about" class="section">
+      <h2>About</h2>
+      <p>Hi! I'm Remy. I make games, websites, and random shit in multiple coding languages</p>
+      <div class="tech-stack">
+        <span>JavaScript</span>
+        <span>Python</span>
+        <span>HTML/CSS</span>
+        <span>LuaU</span>
+        <span>MediaWiki</span>
+        <span>AutoHotkey</span>
+      </div>
+    </section>
 
+    <section id="status" class="section">
+      <h2>Current Activity</h2>
+      <div class="status container">
+        <!-- main.js populates this -->
+      </div>
+    </section>
 
-  <section class="projects container">
-    <h2>Projects & Links</h2>
-    <div class="links">
-      <a href="#" target="_blank">Discord</a>
-      <a href="#" target="_blank">GitHub</a>
-      <a href="#" target="_blank">Twitter</a>
-      <a href="#" target="_blank">YouTube</a>
-    </div>
-  </section>
+    <section id="links" class="section">
+      <h2>Connect</h2>
+      <div class="links">
+        <a href="https://discord.com/users/1237212866445316179" target="_blank">Discord</a>
+        <a href="https://github.com/SaintRemys" target="_blank">GitHub</a>
+      </div>
+    </section>
 
-  <section class="fun container">
-    <h2>Fun Stuff</h2>
-    <p><strong>Hobbies:</strong> Gaming, Coding, Art</p>
-    <p><strong>Favorite Game:</strong> Minecraft</p>
-    <p><strong>Random Quote:</strong> <span id="quote">"Loading..."</span></p>
-  </section>
+    <section class="section">
+      <h2>Random Quote</h2>
+      <div class="quote-container">
+        <span id="quote">Loading...</span>
+      </div>
+    </section>
+  </main>
 
-  <footer class="container footer">
-    <p>© 2025 Saint Remy | Made with code n shi</p>
+  <footer>
+    <p>© 2025 Saint Remy</p>
   </footer>
 
   <script src="main.js"></script>

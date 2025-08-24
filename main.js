@@ -1,5 +1,6 @@
 let lastData = null;
 let lastUpdate = Date.now();
+let cachedActivities = {}; // store previous cards by activity key
 
 function formatDuration(seconds) {
     if (!seconds) return '0s';
@@ -41,8 +42,7 @@ async function updateStatus() {
         lastUpdate = Date.now();
     }
 
-    statusContainer.innerHTML = '';
-
+    // Update status icon
     let statusImg = profileWrapper.querySelector('.status-img');
     const status = lastData.status || 'offline';
     switch (status.toLowerCase()) {
@@ -53,17 +53,35 @@ async function updateStatus() {
     }
 
     const activityKeys = Object.keys(lastData).filter(k => k.startsWith('activity'));
-    if (activityKeys.length) {
-        activityKeys.forEach(key => {
-            const activity = lastData[key];
 
+    if (!activityKeys.length) {
+        if (!cachedActivities.empty) {
+            statusContainer.innerHTML = '';
+            const noActivity = document.createElement('div');
+            noActivity.className = 'activity none';
+            noActivity.textContent = 'Nothing';
+            statusContainer.appendChild(noActivity);
+            cachedActivities = {};
+            cachedActivities.empty = true;
+        }
+        return;
+    }
+
+    cachedActivities.empty = false;
+
+    for (const key of activityKeys) {
+        const activity = lastData[key];
+
+        // Check if cached card exists
+        let card = cachedActivities[key];
+
+        if (!card) {
+            // Create new card
             if (activity.type === 'listening' && activity.name === 'Spotify') {
-                const spotifyCard = document.createElement('div');
-                spotifyCard.innerHTML = `
+                card = document.createElement('div');
+                card.innerHTML = `
                   <div class="spotify-card sss">
-                    <div class="spotify-header">
-                      <span>Listening to Spotify</span>
-                    </div>
+                    <div class="spotify-header"><span>Listening to Spotify</span></div>
                     <div class="spotify-content">
                       <img class="spotify-cover" src="${activity.image_url || ''}" alt="cover">
                       <div class="spotify-info">
@@ -76,44 +94,16 @@ async function updateStatus() {
                         </div>
                       </div>
                     </div>
-                  </div>
-                `;
-
-                if (activity.start && activity.end) {
-                    const start = new Date(activity.start).getTime();
-                    const end = new Date(activity.end).getTime();
-                    const now = Date.now();
-                    const fill = spotifyCard.querySelector('.progress-bar-fill');
-                    const startSpan = spotifyCard.querySelector('.start-time');
-                    const endSpan = spotifyCard.querySelector('.end-time');
-
-                    const elapsed = Math.min(Math.floor((now - start) / 1000), Math.floor((end - start) / 1000));
-                    const total = Math.floor((end - start) / 1000);
-                    const progress = (elapsed / total) * 100;
-
-                    fill.style.width = `${progress}%`;
-                    const format = s => `${String(Math.floor(s / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
-                    startSpan.textContent = format(elapsed);
-                    endSpan.textContent = format(total);
-                }
-
-                statusContainer.appendChild(spotifyCard);
-
+                  </div>`;
             } else if (activity.type === 'playing') {
-                const gameCard = document.createElement('div');
-
                 let gameIcon = '';
-                if (activity.name.toLowerCase() === 'roblox') {
-                    gameIcon = 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Roblox_Logo_2025.png';
-                } else if (activity.name.toLowerCase() === 'valorant') {
-                    gameIcon = 'https://cdn.discordapp.com/app-icons/700136079562375258/e55fc8259df1548328f977d302779ab7.png?size=160&keep_aspect_ratio=false';
-                }
+                if (activity.name.toLowerCase() === 'roblox') gameIcon = 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Roblox_Logo_2025.png';
+                else if (activity.name.toLowerCase() === 'valorant') gameIcon = 'https://cdn.discordapp.com/app-icons/700136079562375258/e55fc8259df1548328f977d302779ab7.png?size=160&keep_aspect_ratio=false';
 
-                gameCard.innerHTML = `
+                card = document.createElement('div');
+                card.innerHTML = `
                     <div class="game-card sss">
-                        <div class="game-header">
-                            <span>Playing Game</span>
-                        </div>
+                        <div class="game-header"><span>Playing Game</span></div>
                         <div class="game-content">
                             <img class="game-cover" src="${gameIcon || activity.image_url || ''}" alt="cover">
                             <div class="game-info">
@@ -123,17 +113,34 @@ async function updateStatus() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                `;
-
-                statusContainer.appendChild(gameCard);
+                    </div>`;
             }
-        });
-    } else {
-        const noActivity = document.createElement('div');
-        noActivity.className = 'activity none';
-        noActivity.textContent = 'Nothing';
-        statusContainer.appendChild(noActivity);
+
+            statusContainer.appendChild(card);
+            cachedActivities[key] = card;
+        }
+
+        // Update times and progress
+        if (activity.type === 'listening' && activity.start && activity.end) {
+            const start = new Date(activity.start).getTime();
+            const end = new Date(activity.end).getTime();
+            const now = Date.now();
+            const elapsed = Math.min(Math.floor((now - start) / 1000), Math.floor((end - start) / 1000));
+            const total = Math.floor((end - start) / 1000);
+            const progress = (elapsed / total) * 100;
+
+            const fill = card.querySelector('.progress-bar-fill');
+            const startSpan = card.querySelector('.start-time');
+            const endSpan = card.querySelector('.end-time');
+            fill.style.width = `${progress}%`;
+
+            const format = s => `${String(Math.floor(s / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
+            startSpan.textContent = format(elapsed);
+            endSpan.textContent = format(total);
+        } else if (activity.type === 'playing') {
+            const playtimeSpan = card.querySelector('.playtime');
+            playtimeSpan.textContent = formatDuration(activity.duration_seconds);
+        }
     }
 }
 
