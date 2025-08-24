@@ -1,6 +1,6 @@
 let lastData = null;
 let lastUpdate = Date.now();
-let cachedActivities = {}; // store previous cards by activity key
+let cachedActivities = {};
 
 function formatDuration(seconds) {
     if (!seconds) return '0s';
@@ -42,7 +42,6 @@ async function updateStatus() {
         lastUpdate = Date.now();
     }
 
-    // Update status icon
     let statusImg = profileWrapper.querySelector('.status-img');
     const status = lastData.status || 'offline';
     switch (status.toLowerCase()) {
@@ -72,11 +71,9 @@ async function updateStatus() {
     for (const key of activityKeys) {
         const activity = lastData[key];
 
-        // Check if cached card exists
         let card = cachedActivities[key];
 
         if (!card) {
-            // Create new card
             if (activity.type === 'listening' && activity.name === 'Spotify') {
                 card = document.createElement('div');
                 card.innerHTML = `
@@ -120,7 +117,6 @@ async function updateStatus() {
             cachedActivities[key] = card;
         }
 
-        // Update times and progress
         if (activity.type === 'listening' && activity.start && activity.end) {
             const start = new Date(activity.start).getTime();
             const end = new Date(activity.end).getTime();
@@ -143,6 +139,12 @@ async function updateStatus() {
         }
     }
 }
+
+document.getElementById('time').textContent = new Date().toLocaleTimeString();
+setInterval(() => {
+  document.getElementById('time').textContent = new Date().toLocaleTimeString();
+}, 1000);
+
 
 updateStatus();
 setInterval(updateStatus, 1000);
