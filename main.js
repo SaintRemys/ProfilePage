@@ -162,10 +162,13 @@ async function updateStatus() {
     })
 }
 
-document.getElementById('time').textContent = new Date().toLocaleTimeString()
-setInterval(() => {
-    document.getElementById('time').textContent = new Date().toLocaleTimeString()
-}, 1000)
+function updateTime() {
+    const options = { timeZone: "Australia/Sydney", hour12: false };
+    document.getElementById('time').textContent = new Date().toLocaleTimeString('en-AU', options);
+}
+
+updateTime();
+setInterval(updateTime, 1000);
 
 applyTheme(offline)
 updateStatus()
