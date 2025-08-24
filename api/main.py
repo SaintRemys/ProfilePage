@@ -21,7 +21,7 @@ def activities_to_dict(acts):
     result = {}
     for i, a in enumerate(acts, start=1):
         image_url = None
-        if a.name.lower() == "spotify":
+        if a.name and a.name.lower() == "spotify":
             image_url = getattr(a, "album_cover_url", None)
             if not image_url and getattr(a, "assets", None):
                 large_image = getattr(a.assets, "large_image", None)
@@ -44,16 +44,16 @@ def activities_to_dict(acts):
                     image_url = f"https://cdn.discordapp.com/app-assets/{app_id}/{assets.large_image}.png"
                 elif getattr(assets, "small_image", None):
                     image_url = f"https://cdn.discordapp.com/app-assets/{app_id}/{assets.small_image}.png"
-
         start_time = getattr(a, "start", None)
         duration_seconds = getattr(a, "duration_seconds", None)
         if start_time and not duration_seconds:
             now = datetime.now(timezone.utc)
             duration_seconds = int((now - start_time).total_seconds())
-
-        if a.type.name.lower() != "custom" or a.name.lower() == "spotify":
+        if not getattr(a, "type", None):
+            continue
+        if a.type.name.lower() != "custom" or (a.name and a.name.lower() == "spotify"):
             result[f"activity{i}"] = {
-                "type": a.type.name.lower() if a.name.lower() != "spotify" else "listening",
+                "type": a.type.name.lower() if not (a.name and a.name.lower() == "spotify") else "listening",
                 "name": a.name,
                 "details": details,
                 "state": state,
@@ -69,7 +69,7 @@ async def on_ready():
     for g in client.guilds:
         try:
             await g.chunk(cache=True)
-        except Exception:
+        except:
             pass
         for m in g.members:
             user_cache[m.id] = {
@@ -93,7 +93,7 @@ def get_status(user_id):
     user = user_cache.get(user_id, {"status": "unknown"})
     if user.get("status") != "unknown":
         now = datetime.now(timezone.utc)
-        for key in user.keys():
+        for key in list(user.keys()):
             if key.startswith("activity"):
                 activity = user[key]
                 start = activity.get("start")
@@ -104,10 +104,10 @@ def get_status(user_id):
 
 @app.route("/health")
 def health():
-    return "ok"
+    return "api is funcional"
 
 def run_http():
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "8080")))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "8080")), threaded=True)
 
 threading.Thread(target=run_http, daemon=True).start()
-client.run(os.environ["BOT_TOKEN"])
+client.run(os.environ["BOT_TOKEN"], reconnect=True, log_handler=None)
