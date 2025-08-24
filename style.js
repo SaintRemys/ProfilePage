@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initSmoothScrolling();
     addScrollAnimations();
     initParallaxEffect();
+    updateActiveNav();
 });
 
 function loadRandomQuote() {
@@ -121,25 +122,31 @@ function updateActiveNav() {
         requestAnimationFrame(() => {
             const sections = document.querySelectorAll('.section[id]');
             const navLinks = document.querySelectorAll('.nav-links a');
-            const scrollPos = window.scrollY + 120;
-            
-            let current = '';
+            const viewportCenter = window.scrollY + window.innerHeight / 2;
+
+            let closestSection = sections[0];
+            let minDistance = Infinity;
+
             sections.forEach(section => {
-                if (section.offsetTop <= scrollPos && 
-                    section.offsetTop + section.offsetHeight > scrollPos) {
-                    current = section.getAttribute('id');
+                const sectionCenter = section.offsetTop + section.offsetHeight / 2;
+                const distance = Math.abs(viewportCenter - sectionCenter);
+                if (distance < minDistance) {
+                    closestSection = section;
+                    minDistance = distance;
                 }
             });
-            
+
+            const currentId = closestSection.getAttribute('id');
+
             navLinks.forEach(link => {
                 link.style.color = '';
                 link.style.transform = '';
-                if (link.getAttribute('href') === '#' + current) {
+                if (link.getAttribute('href') === '#' + currentId) {
                     link.style.color = 'var(--accent)';
                     link.style.transform = 'translateY(-1px)';
                 }
             });
-            
+
             ticking = false;
         });
         ticking = true;
