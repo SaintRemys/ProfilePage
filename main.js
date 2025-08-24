@@ -13,9 +13,25 @@ function formatDuration(seconds) {
     return `${d ? d + 'd ' : ''}${h ? h + 'h ' : ''}${m ? m + 'm ' : ''}${s}s`;
 }
 
+const online = `:root { --bg:#0a0a0a;--surface:#111111;--surface-alt:#0f0f0f;--border:#222222;--text:#e0e0e0;--text-dim:#888888;--accent:#4ade80;--accent-strong:#16a34a;--accent-alt:#10b981;--accent-alt2:#06d6a0;--profile-shadow:rgba(74,222,128,0.4);--profile-shadow2:rgba(74,222,128,0.1);--glow1:rgba(74,222,128,0.3);--glow2:rgba(74,222,128,0.5);--white-soft:rgba(255,255,255,0.1);--white-bright:rgba(255,255,255,0.8);--white-glow1:rgba(197,197,197,0.5);--white-glow2:rgba(255,255,255,0.7);--black-shadow:rgba(0,0,0,0.3);--black-shadow-strong:rgba(0,0,0,0.4);--radius:8px;--font-mono:'SF Mono','Monaco','Inconsolata',monospace;--font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }`;
+const idle = `:root { --bg:#0a0a0a;--surface:#111111;--surface-alt:#0f0f0f;--border:#222222;--text:#e0e0e0;--text-dim:#888888;--accent:#facc15;--accent-strong:#ca8a04;--accent-alt:#eab308;--accent-alt2:#fcd34d;--profile-shadow:rgba(250,204,21,0.4);--profile-shadow2:rgba(250,204,21,0.1);--glow1:rgba(250,204,21,0.3);--glow2:rgba(250,204,21,0.5);--white-soft:rgba(255,255,255,0.1);--white-bright:rgba(255,255,255,0.8);--white-glow1:rgba(197,197,197,0.5);--white-glow2:rgba(255,255,255,0.7);--black-shadow:rgba(0,0,0,0.3);--black-shadow-strong:rgba(0,0,0,0.4);--radius:8px;--font-mono:'SF Mono','Monaco','Inconsolata',monospace;--font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }`;
+const dnd = `:root { --bg:#0a0a0a;--surface:#111111;--surface-alt:#0f0f0f;--border:#222222;--text:#e0e0e0;--text-dim:#888888;--accent:#ef4444;--accent-strong:#b91c1c;--accent-alt:#dc2626;--accent-alt2:#f87171;--profile-shadow:rgba(239,68,68,0.4);--profile-shadow2:rgba(239,68,68,0.1);--glow1:rgba(239,68,68,0.3);--glow2:rgba(239,68,68,0.5);--white-soft:rgba(255,255,255,0.1);--white-bright:rgba(255,255,255,0.8);--white-glow1:rgba(197,197,197,0.5);--white-glow2:rgba(255,255,255,0.7);--black-shadow:rgba(0,0,0,0.3);--black-shadow-strong:rgba(0,0,0,0.4);--radius:8px;--font-mono:'SF Mono','Monaco','Inconsolata',monospace;--font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }`;
+const offline = `:root { --bg:#0a0a0a;--surface:#111111;--surface-alt:#0f0f0f;--border:#222222;--text:#e0e0e0;--text-dim:#888888;--accent:#9ca3af;--accent-strong:#6b7280;--accent-alt:#4b5563;--accent-alt2:#d1d5db;--profile-shadow:rgba(156,163,175,0.4);--profile-shadow2:rgba(156,163,175,0.1);--glow1:rgba(156,163,175,0.3);--glow2:rgba(156,163,175,0.5);--white-soft:rgba(255,255,255,0.1);--white-bright:rgba(255,255,255,0.8);--white-glow1:rgba(197,197,197,0.5);--white-glow2:rgba(255,255,255,0.7);--black-shadow:rgba(0,0,0,0.3);--black-shadow-strong:rgba(0,0,0,0.4);--radius:8px;--font-mono:'SF Mono','Monaco','Inconsolata',monospace;--font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }`;
+
+function applyTheme(css) {
+    let themeTag = document.getElementById('status-theme');
+    if (!themeTag) {
+        themeTag = document.createElement('style');
+        themeTag.id = 'status-theme';
+        document.head.appendChild(themeTag);
+    }
+    themeTag.textContent = css;
+}
+
 async function updateStatus() {
     const statusContainer = document.querySelector('.status.container');
     const profileWrapper = document.querySelector('.profile-wrapper');
+    if (!statusContainer || !profileWrapper) return;
 
     try {
         const res = await fetch('https://profilepage-t864.onrender.com/status/1237212866445316179');
@@ -34,7 +50,9 @@ async function updateStatus() {
                     if (act.start) {
                         const startTime = new Date(act.start).getTime();
                         const now = Date.now();
-                        if (!act.end || now < new Date(act.end).getTime()) act.start = new Date(startTime - delta * 1000).toISOString();
+                        if (!act.end || now < new Date(act.end).getTime()) {
+                            act.start = new Date(startTime - delta * 1000).toISOString();
+                        }
                     }
                 }
             }
@@ -43,16 +61,27 @@ async function updateStatus() {
     }
 
     let statusImg = profileWrapper.querySelector('.status-img');
-    const status = lastData.status || 'offline';
-    switch (status.toLowerCase()) {
-        case 'online': statusImg.src = 'https://assets.guns.lol/online.png'; break;
-        case 'idle': statusImg.src = 'https://assets.guns.lol/idle.png'; break;
-        case 'dnd': statusImg.src = 'https://assets.guns.lol/dnd.png'; break;
-        default: statusImg.src = 'https://assets.guns.lol/offline.png';
+    const status = (lastData.status || 'offline').toLowerCase();
+
+    switch (status) {
+        case 'online':
+            statusImg.src = 'https://assets.guns.lol/online.png';
+            applyTheme(online);
+            break;
+        case 'idle':
+            statusImg.src = 'https://assets.guns.lol/idle.png';
+            applyTheme(idle);
+            break;
+        case 'dnd':
+            statusImg.src = 'https://assets.guns.lol/dnd.png';
+            applyTheme(dnd);
+            break;
+        default:
+            statusImg.src = 'https://assets.guns.lol/offline.png';
+            applyTheme(offline);
     }
 
     const activityKeys = Object.keys(lastData).filter(k => k.startsWith('activity'));
-
     if (!activityKeys.length) {
         if (!cachedActivities.empty) {
             statusContainer.innerHTML = '';
@@ -70,7 +99,6 @@ async function updateStatus() {
 
     for (const key of activityKeys) {
         const activity = lastData[key];
-
         let card = cachedActivities[key];
 
         if (!card) {
@@ -139,6 +167,7 @@ async function updateStatus() {
         }
     }
 }
+
 
 document.getElementById('time').textContent = new Date().toLocaleTimeString();
 setInterval(() => {
