@@ -546,3 +546,32 @@ footer {
   will-change: transform;
   transform-style: preserve-3d;
 }
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-alt);
+  border-radius: var(--radius);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--accent), var(--accent-alt2));
+  border-radius: var(--radius);
+  border: 2px solid var(--surface-alt);
+  box-shadow: 0 0 6px var(--glow1);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--accent-strong), var(--accent-alt));
+  box-shadow: 0 0 12px var(--glow2);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--surface-alt);
+}
