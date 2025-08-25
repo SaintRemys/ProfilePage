@@ -79,47 +79,57 @@ function removeFinishedActivities() {
 function renderActivity(container, key, activity) {
   if (!activity) return;
   let card = cachedActivities[key];
-  if (!card) {
+  const isNew = !card;
+  if (isNew) {
     card = document.createElement("div");
     cachedActivities[key] = card;
     container.appendChild(card);
   }
 
   if (activity.type === "listening") {
-    const cover = activity.image_url || "assets/spotify.png";
-    card.className = "activity spotify-card sss";
-    card.dataset.start = activity.start;
-    card.dataset.end = activity.end;
-    card.innerHTML = `<div class="spotify-header"><span>Listening to Spotify</span></div>
-      <div class="spotify-content">
-        <img class="spotify-cover" src="${cover}" alt="cover">
-        <div class="spotify-info">
-          <p class="spotify-title">${activity.details||'Unknown Track'}</p>
-          <p class="spotify-artist">${activity.state||'Unknown Artist'}</p>
-          <div class="progress-container">
-            <span class="start-time">00:00</span>
-            <div class="progress-bar"><div class="progress-bar-fill"></div></div>
-            <span class="end-time">00:00</span>
+    if (isNew) {
+      const cover = activity.image_url || "assets/spotify.png";
+      card.className = "activity spotify-card sss";
+      card.dataset.start = activity.start;
+      card.dataset.end = activity.end;
+      card.innerHTML = `<div class="spotify-header"><span>Listening to Spotify</span></div>
+        <div class="spotify-content">
+          <img class="spotify-cover" src="${cover}" alt="cover">
+          <div class="spotify-info">
+            <p class="spotify-title">${activity.details||'Unknown Track'}</p>
+            <p class="spotify-artist">${activity.state||'Unknown Artist'}</p>
+            <div class="progress-container">
+              <span class="start-time">00:00</span>
+              <div class="progress-bar"><div class="progress-bar-fill"></div></div>
+              <span class="end-time">00:00</span>
+            </div>
           </div>
-        </div>
-      </div>`;
-  } else if (activity.type === "playing") {
-    let g = activity.image_url || "";
-    if (!g) {
-      if (activity.name?.toLowerCase() === "roblox") g = "assets/roblox.png";
-      else if (activity.name?.toLowerCase() === "valorant") g = "assets/valorant.png";
-      else g = "assets/game.png";
+        </div>`;
+    } else {
+      card.dataset.start = activity.start;
+      card.dataset.end = activity.end;
     }
-    card.className = "activity game-card sss";
-    card.dataset.start = activity.start;
-    card.innerHTML = `<div class="game-header"><span>Playing Game</span></div>
-      <div class="game-content">
-        <img class="game-cover" src="${g}" alt="cover">
-        <div class="game-info">
-          <p class="game-title">${activity.name||'Unknown Game'}</p>
-          <div class="progress-container"><span class="playtime">00:00</span></div>
-        </div>
-      </div>`;
+  } else if (activity.type === "playing") {
+    if (isNew) {
+      let g = activity.image_url || "";
+      if (!g) {
+        if (activity.name?.toLowerCase() === "roblox") g = "assets/Roblox.png";
+        else if (activity.name?.toLowerCase() === "valorant") g = "assets/Valorant.png";
+        else g = "assets/game.png";
+      }
+      card.className = "activity game-card sss";
+      card.dataset.start = activity.start;
+      card.innerHTML = `<div class="game-header"><span>Playing Game</span></div>
+        <div class="game-content">
+          <img class="game-cover" src="${g}" alt="cover">
+          <div class="game-info">
+            <p class="game-title">${activity.name||'Unknown Game'}</p>
+            <div class="progress-container"><span class="playtime">00:00</span></div>
+          </div>
+        </div>`;
+    } else {
+      card.dataset.start = activity.start;
+    }
   }
 }
 
@@ -139,9 +149,8 @@ async function updateStatus() {
   fillNoneIfEmpty(c);
 }
 
-function updateTimers() {
-  if (!lastData) return;
-  let refreshNeeded = false;
+function tickTimers() {
+  if (!lastData) { requestAnimationFrame(tickTimers); return; }
 
   Object.entries(cachedActivities).forEach(([k, card]) => {
     const a = lastData[k];
@@ -150,28 +159,37 @@ function updateTimers() {
     if (a.type === "listening" && a.start && a.end) {
       const start = new Date(a.start).getTime(), end = new Date(a.end).getTime();
       const now = Date.now();
-      const total = Math.floor((end - start)/1000);
-      let elapsed = Math.floor((now - start)/1000);
-      if (elapsed >= total) { elapsed = total; if (!finishedSongs.has(k)) { finishedSongs.add(k); refreshNeeded = true; } }
+      const total = (end - start)/1000;
+      let elapsed = (now - start)/1000;
+
+      if (elapsed >= total) {
+        elapsed = total;
+        if (!finishedSongs.has(k)) {
+          finishedSongs.add(k);
+          setTimeout(() => updateStatus(), 1000);
+        }
+      }
+
       const f = card.querySelector(".progress-bar-fill");
       const st = card.querySelector(".start-time");
       const et = card.querySelector(".end-time");
       if (f) f.style.width = `${Math.min((elapsed/total)*100,100)}%`;
-      if (st) st.textContent = `${String(Math.floor(elapsed/60)).padStart(2,"0")}:${String(elapsed%60).padStart(2,"0")}`;
-      if (et) et.textContent = `${String(Math.floor(total/60)).padStart(2,"0")}:${String(total%60).padStart(2,"0")}`;
+      if (st) st.textContent = `${String(Math.floor(elapsed/60)).padStart(2,"0")}:${String(Math.floor(elapsed%60)).padStart(2,"0")}`;
+      if (et) et.textContent = `${String(Math.floor(total/60)).padStart(2,"0")}:${String(Math.floor(total%60)).padStart(2,"0")}`;
     } else if (a.type === "playing" && a.start) {
       const pt = card.querySelector(".playtime");
       if (pt) {
         const start = new Date(a.start).getTime();
-        let elapsed = Math.floor((Date.now() - start)/1000);
+        let elapsed = (Date.now() - start)/1000;
         if (elapsed < 0) elapsed = 0;
-        pt.textContent = formatDuration(elapsed);
+        pt.textContent = formatDuration(Math.floor(elapsed));
       }
     }
   });
 
-  if (refreshNeeded) updateStatus();
+  requestAnimationFrame(tickTimers);
 }
+
 
 function updateTime() {
   const now = new Date();
@@ -188,7 +206,7 @@ async function init() {
   setInterval(updateTime,1000);
   applyTheme("offline");
   await updateStatus();
-  setInterval(updateTimers,1000);
+  tickTimers();
   setInterval(updateStatus,15000);
 }
 
