@@ -23,7 +23,8 @@ function loadRandomQuote() {
         "SDIYBT 🥀",
         "jst Sybau",
         "Hi twin ✌️",
-        "SIXXXX SEVENNNN 🗣️"
+        "SIXXXX SEVENNNN 🗣️",
+        "Please dont fuck the fish"
     ];
     
     const quoteElement = document.getElementById('quote');
